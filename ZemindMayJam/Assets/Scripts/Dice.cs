@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
-public class Dice : MonoBehaviour
+public class Dice : GamePiece
 {
     Sequence _movementSequence;
-    public int _currentFace = 0;
+    public int _currentFace = 1;
 
     Dictionary<int, AbilityInfo> _abilities = new Dictionary<int, AbilityInfo>()
     {
@@ -17,16 +17,6 @@ public class Dice : MonoBehaviour
         {5, null },
         {6, null }
     };
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.up, out hit, Mathf.Infinity))
-        {
-            Debug.Log(hit.collider);
-        }
-    }
 
     // Update is called once per frame
     void Update()
@@ -47,17 +37,30 @@ public class Dice : MonoBehaviour
 
     void UseAbility()
     {
-        _abilities[_currentFace]?._callback();
+        if (_abilities[_currentFace] != null)
+        {
+            _abilities[_currentFace]?._callback();
+            return;
+        }
+
+        Debug.Log($"No ability found on {_currentFace}");
     }
 
-    void CalculateMovement(Vector3 modifier)
+    void CalculateMovement(Vector3 modifier, Vector3 newPosition)
     {
+        float distance = Vector3.Distance(newPosition, transform.localPosition);
+        newPosition.y = transform.position.y;
+
+        if (Vector3.Distance(newPosition, transform.localPosition) < 1)
+        {
+            return;
+        }
+
         _movementSequence = DOTween.Sequence();
-        Vector3 currentPos = transform.position;
-        Vector3 rotateVector = new Vector3(modifier.z, 0, -modifier.x);
+        Vector3 rotateVector = new Vector3(modifier.x, 0, modifier.z);
         Quaternion axisRotation = Quaternion.AngleAxis(90f, rotateVector);
         Quaternion targetRotation = axisRotation * transform.rotation;
-        _movementSequence.Append(transform.DOMove(currentPos + modifier * 1.5f, 1));
+        _movementSequence.Append(transform.DOLocalMove(newPosition, 1));
         _movementSequence.Join(transform.DORotateQuaternion(targetRotation, 1));
         _movementSequence.onComplete = () =>
         {
@@ -139,22 +142,26 @@ public class Dice : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.D))
         {
             horzMod = 1;
-            CalculateMovement(new Vector3(horzMod, 0, depthMod));
+            Vector2 newPosition = BoardManager.instance.RequestMovement(this, new Vector2(horzMod, depthMod));
+            CalculateMovement(new Vector3(horzMod, 0, depthMod), new Vector3(newPosition.x, 0, newPosition.y));
         }
         else if (Input.GetKeyDown(KeyCode.A))
         {
             horzMod = -1;
-            CalculateMovement(new Vector3(horzMod, 0, depthMod));
+            Vector2 newPosition = BoardManager.instance.RequestMovement(this, new Vector2(horzMod, depthMod));
+            CalculateMovement(new Vector3(horzMod, 0, depthMod), new Vector3(newPosition.x, 0, newPosition.y));
         }
         else if (Input.GetKeyDown(KeyCode.W))
         {
             depthMod = 1;
-            CalculateMovement(new Vector3(horzMod, 0, depthMod));
+            Vector2 newPosition = BoardManager.instance.RequestMovement(this, new Vector2(horzMod, depthMod));
+            CalculateMovement(new Vector3(horzMod, 0, depthMod), new Vector3(newPosition.x, 0, newPosition.y));
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
             depthMod = -1;
-            CalculateMovement(new Vector3(horzMod, 0, depthMod));
+            Vector2 newPosition = BoardManager.instance.RequestMovement(this, new Vector2(horzMod, depthMod));
+            CalculateMovement(new Vector3(horzMod, 0, depthMod), new Vector3(newPosition.x, 0, newPosition.y));
         }
         else if (Input.GetKeyDown(KeyCode.Space))
         {

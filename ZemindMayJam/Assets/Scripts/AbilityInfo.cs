@@ -61,26 +61,46 @@ public class AbilityInfo
 
     public static AbilityInfo DicePush()
     {
-        return new AbilityInfo("Dice Push", Color.cyan, null);
+        return new AbilityInfo("Dice Push", Color.cyan, 
+        () =>
+        {
+            Debug.Log("Dice <color=cyan>Push!</color>");
+        });
     }
 
     public static AbilityInfo DicePull()
     {
-        return new AbilityInfo("Dice Pull", Color.yellow, null);
+        return new AbilityInfo("Dice Pull", Color.yellow,
+        () =>
+        {
+            Debug.Log("Dice <color=yellow>Pull!</color>");
+        });
     }
 
     public static AbilityInfo DiceMindTrick()
     {
-        return new AbilityInfo("Dice Mind Trick", Color.magenta, null);
+        return new AbilityInfo("Dice Mind Trick", Color.magenta,
+        () =>
+        {
+            Debug.Log("Dice <color=magenta>Mind Trick!</color>");
+        });
     }
 
     public static AbilityInfo DiceTimeSlip()
     {
-        return new AbilityInfo("Dice Time Slip", Color.white, null);
+        return new AbilityInfo("Dice Time Slip", Color.white,
+        () =>
+        {
+            Debug.Log("Dice <color=white>Time Slip!</color>");
+        });
     }
 
     public static AbilityInfo DiceHeal()
     {
-        return new AbilityInfo("Dice Heal", Color.green, null);
+        return new AbilityInfo("Dice Heal", Color.green,
+        () =>
+        {
+            Debug.Log("Dice <color=green>Heal!</color>");
+        });
     }
 }

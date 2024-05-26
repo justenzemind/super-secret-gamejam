@@ -11,7 +11,6 @@ public class CustomDropTo : MonoBehaviour, IPointerEnterHandler
         {
             UiManager.instance.dropTo = this.gameObject;
         }
-        Debug.Log(name + " OnPointerEnter()");
     }
 
     public virtual void UpdateSelf<T>(T data) where T : class
