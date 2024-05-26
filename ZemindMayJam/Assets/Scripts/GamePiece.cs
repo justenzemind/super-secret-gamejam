@@ -4,5 +4,5 @@ using UnityEngine;
 
 public abstract class GamePiece : MonoBehaviour
 {
-    
+    public virtual void Initialize() { }
 }

@@ -69,7 +69,7 @@ public class Dice : GamePiece
             {
                 DetectFace(ii);
             }
-            
+            BoardManager.instance.EndPlayerPhase();
         };
         _movementSequence.Play();
     }
@@ -136,32 +136,37 @@ public class Dice : GamePiece
             return;
         }
 
+        if (BoardManager.instance.currentPhase != BoardManager.Phase.PlayerPhase)
+        {
+            return;
+        }
+
         float horzMod = 0;
         float depthMod = 0;
 
         if (Input.GetKeyDown(KeyCode.D))
         {
-            horzMod = 1;
+            horzMod = -1;
             Vector2 newPosition = BoardManager.instance.RequestMovement(this, new Vector2(horzMod, depthMod));
-            CalculateMovement(new Vector3(horzMod, 0, depthMod), new Vector3(newPosition.x, 0, newPosition.y));
+            CalculateMovement(new Vector3(-horzMod, 0, depthMod), new Vector3(newPosition.x, 0, newPosition.y));
         }
         else if (Input.GetKeyDown(KeyCode.A))
         {
-            horzMod = -1;
+            horzMod = 1;
             Vector2 newPosition = BoardManager.instance.RequestMovement(this, new Vector2(horzMod, depthMod));
-            CalculateMovement(new Vector3(horzMod, 0, depthMod), new Vector3(newPosition.x, 0, newPosition.y));
+            CalculateMovement(new Vector3(-horzMod, 0, depthMod), new Vector3(newPosition.x, 0, newPosition.y));
         }
         else if (Input.GetKeyDown(KeyCode.W))
         {
-            depthMod = 1;
+            depthMod = -1;
             Vector2 newPosition = BoardManager.instance.RequestMovement(this, new Vector2(horzMod, depthMod));
-            CalculateMovement(new Vector3(horzMod, 0, depthMod), new Vector3(newPosition.x, 0, newPosition.y));
+            CalculateMovement(new Vector3(horzMod, 0, -depthMod), new Vector3(newPosition.x, 0, newPosition.y));
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
-            depthMod = -1;
+            depthMod = 1;
             Vector2 newPosition = BoardManager.instance.RequestMovement(this, new Vector2(horzMod, depthMod));
-            CalculateMovement(new Vector3(horzMod, 0, depthMod), new Vector3(newPosition.x, 0, newPosition.y));
+            CalculateMovement(new Vector3(horzMod, 0, -depthMod), new Vector3(newPosition.x, 0, newPosition.y));
         }
         else if (Input.GetKeyDown(KeyCode.Space))
         {

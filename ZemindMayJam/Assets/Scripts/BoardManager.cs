@@ -6,9 +6,18 @@ using UnityEngine;
 public class BoardManager : MonoBehaviour
 {
     public static BoardManager instance;
+    public Phase currentPhase = Phase.PlayerPhase;
     public List<List<Vector2>> grid = new List<List<Vector2>>();
     public Dictionary<GamePiece, Coordinates> piecePositions = new Dictionary<GamePiece, Coordinates>();
     public float _tileSize = 1.5f;
+
+    public System.Action OnEnemyTurn;
+
+    public enum Phase
+    {
+        PlayerPhase,
+        EnemyPhase
+    }
 
     public struct Coordinates
     {
@@ -22,15 +31,18 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    private void Start()
+    private void Awake()
     {
-        if(instance != null)
+        if (instance != null)
         {
             Destroy(this.gameObject);
             return;
         }
         instance = this;
+    }
 
+    private void Start()
+    {
         InitializeGrid();
         InitializeGamepieces();
     }
@@ -60,10 +72,11 @@ public class BoardManager : MonoBehaviour
         foreach(GamePiece gp in gamePieces)
         {
             piecePositions.Add(gp, new Coordinates(
-                Mathf.RoundToInt(gp.transform.position.x / _tileSize),
-                Mathf.RoundToInt(gp.transform.position.z / _tileSize)));
+                Mathf.FloorToInt(gp.transform.localPosition.x / _tileSize),
+                Mathf.FloorToInt(gp.transform.localPosition.z / _tileSize)));
             Vector3 newPosition = GetPositionFromCoordinate(piecePositions[gp]);
-            gp.transform.position = new Vector3(newPosition.x, gp.transform.position.y, newPosition.y);
+            gp.transform.localPosition = new Vector3(newPosition.x, gp.transform.localPosition.y, newPosition.y);
+            gp.Initialize();
         }
     }
 
@@ -76,14 +89,14 @@ public class BoardManager : MonoBehaviour
             if(kvp.Value.x == piecePositions[piece].x + direction.x && kvp.Value.y == piecePositions[piece].y + direction.y)
             {
                 newPosition = GetPositionFromCoordinate(piecePositions[piece]);
-                Debug.Log("Another piece already occupies that space!");
+                Debug.Log($"Another piece already occupies that space!");
                 return newPosition;
             }
         }
 
         Coordinates newCoordinates = new Coordinates(
-            Mathf.Clamp(piecePositions[piece].x + (int)direction.x, 0, grid.Count), 
-            Mathf.Clamp(piecePositions[piece].y + (int)direction.y, 0, grid[0].Count));
+            Mathf.Clamp(piecePositions[piece].x + (int)direction.x, 0, grid.Count - 1), 
+            Mathf.Clamp(piecePositions[piece].y + (int)direction.y, 0, grid[0].Count - 1));
         piecePositions[piece] = newCoordinates;
         return GetPositionFromCoordinate(newCoordinates);
     }
@@ -94,15 +107,48 @@ public class BoardManager : MonoBehaviour
         int y = c.y;
         try
         {
-            Vector2 newPosition = grid[x][y] * -_tileSize;
+            Vector2 newPosition = grid[x][y] * _tileSize;
             return newPosition;
         }
         catch (Exception e)
         {
             Debug.Log(e.Message);
+            Debug.Log(x + ", " + y);
             x = Mathf.Clamp(x, 0, 9);
             y = Mathf.Clamp(y, 0, 9);
             return GetPositionFromCoordinate(new Coordinates(x, y));
         }
+    }
+
+    public void ExecuteEnemyTurn()
+    {
+        if (currentPhase == Phase.EnemyPhase)
+        {
+            if (OnEnemyTurn != null)
+            {
+                OnEnemyTurn();
+            }
+        }
+    }
+
+    public void EndPlayerPhase()
+    {
+        currentPhase = Phase.EnemyPhase;
+        ExecuteEnemyTurn();
+    }
+
+    public void CheckEnemyPhase()
+    {
+        Enemy[] allEnemies = FindObjectsOfType<Enemy>();
+
+        foreach (var e in allEnemies)
+        {
+            if (e.finishedTurn == false)
+            {
+                return;
+            }
+        }
+
+        currentPhase = Phase.PlayerPhase;
     }
 }
